@@ -1,36 +1,58 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
 import { Form, FormLabel, FormInput, FormBtn } from './ContactForm.styled';
 
-const INITIAL_STATE = {
-  name: '',
-  number: '',
-};
+import { useDispatch, useSelector } from 'react-redux';
+import { selectorContacts } from '../../redux/selectors';
+import { addContact } from '../../redux/contactsSlice';
 
-export default function ContactForm({ onSubmit }) {
-  const [formData, setFormData] = useState({ ...INITIAL_STATE });
+const ContactForm = () => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+  const dispatch = useDispatch(); // Хук для відправлення action
+  const contacts = useSelector(selectorContacts); // Отримуємо всі контакти зі стейта Store
 
-  // Обробник для всіх інпутів, інпути розрізняються за атрибутом name
-  // Відповідає за оновлення стану
+  // Відповідає за оновлення стану (контрольований інпут)
   const handleInputChange = evt => {
-    // console.log(evt.currentTarget.name);
-    // console.log(evt.currentTarget.value);
     const { name, value } = evt.currentTarget;
-    setFormData(prevData => ({ ...prevData, [name]: value }));
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+      default:
+        break;
+    }
   };
 
   // Викликається під час відправлення форми
   const handleSubmit = evt => {
     evt.preventDefault();
-    onSubmit(formData);
-    resetForm();
+
+    const isAdded = contacts.find(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+    if (isAdded) {
+      return toast.error(`${name} is already in contacts.`);
+    }
+
+    // Відправлення action addContact
+    dispatch(
+      addContact({
+        name,
+        number,
+      })
+    );
+
+    resetForm(); // Очистка форми
   };
 
   const resetForm = () => {
-    setFormData({ ...INITIAL_STATE });
+    setName('');
+    setNumber('');
   };
-
-  const { name, number } = formData;
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -65,6 +87,4 @@ export default function ContactForm({ onSubmit }) {
   );
 }
 
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
+export default ContactForm;

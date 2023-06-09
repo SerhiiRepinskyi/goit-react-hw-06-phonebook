@@ -18,7 +18,7 @@ const contactsSlice = createSlice({
     addContact: {
       reducer: (state, action) => {
         state.push(action.payload);
-        //  state = [...state, action.payload]; - бібліотека Immer перепише ыммутабельно
+        //  state = [...state, action.payload]; - бібліотека Immer перепише іммутабельно
       },
       prepare: ({ name, number }) => {
         const id = nanoid();
@@ -27,7 +27,10 @@ const contactsSlice = createSlice({
     },
 
     deleteContact: (state, action) => {
-      state = state.filter(contact => contact.id !== action.payload); // видаляємо елемент з масиву по id
+      const id = action.payload;
+      // видаляємо елемент з масиву по id
+      return state.filter(contact => contact.id !== id);
+      // return state.filter(contact => contact.id !== action.payload);
     },
   },
 });

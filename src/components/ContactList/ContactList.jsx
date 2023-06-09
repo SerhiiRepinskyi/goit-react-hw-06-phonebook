@@ -1,40 +1,38 @@
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectorContacts, selectorFilter } from '../../redux/selectors';
+import { deleteContact } from '../../redux/contactsSlice';
 import { ContactsList, ContactItem, Btn } from './ContactList.styled';
 
-const ContactList = ({ contacts, deleteContact }) => {
-  const sortedContacts = [...contacts].sort((a, b) =>
-    a.name.localeCompare(b.name)
+const ContactList = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectorContacts);
+  const filter = useSelector(selectorFilter);
+
+  const handleDeleteContact = id => {
+    dispatch(deleteContact(id));
+  };
+
+  // Фільтрація контактів за значенням фільтра
+  const normalizedFilter = filter.toLowerCase();
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(normalizedFilter)
   );
-  //   const sortedContacts = [...contacts].sort((a, b) => {
-  //     if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
-  //     if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
-  //     return 0;
-  //   });
 
   return (
     <ContactsList>
-      {sortedContacts.map(({ id, name, number }) => (
+      {filteredContacts.map(({ id, name, number }) => (
         <ContactItem key={id}>
           <span>{name}: </span>
           <span>{number}</span>
-          <Btn type="submit" onClick={() => deleteContact(id)}>
+          <Btn type="button" onClick={() => handleDeleteContact(id)}>
             Delete
           </Btn>
         </ContactItem>
       ))}
+
+      {!filteredContacts?.length && <div>No contacts found.</div>}
     </ContactsList>
   );
-};
-
-ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.exact({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ),
-  deleteContact: PropTypes.func.isRequired,
 };
 
 export default ContactList;
